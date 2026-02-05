@@ -1,0 +1,218 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { authStore } from '$lib/stores/authStore';
+	import { supabase } from '$lib/supabase';
+	import { fly, scale } from 'svelte/transition';
+
+	let auth = $state({ user: null as any, isAuthenticated: false });
+	let userAnswer = $state<number | null>(null);
+	let loading = $state(false);
+	let submitted = $state(false);
+	let result = $state<number | null>(null);
+
+	const CORRECT_ANSWER = 762100;
+	const QUESTION = 'Vad var Titus lön under inkomståret 2024? Total lön.';
+
+	onMount(() => {
+		const unsubscribe = authStore.subscribe((value) => {
+			auth = value;
+		});
+
+		if (!auth.isAuthenticated) {
+			goto('/');
+		}
+
+		return unsubscribe;
+	});
+
+	function calculatePercentageDifference(answer: number): number {
+		const difference = Math.abs(answer - CORRECT_ANSWER);
+		const percentageDiff = (difference / CORRECT_ANSWER) * 100;
+		return Math.round(percentageDiff * 100) / 100; // Round to 2 decimals
+	}
+
+	async function submitAnswer() {
+		if (userAnswer === null || !auth.user) {
+			alert('Vänligen ange ett svar');
+			return;
+		}
+
+		loading = true;
+		result = calculatePercentageDifference(userAnswer);
+
+		try {
+			// Store the percentage difference as raw value (lower is better)
+			const { error } = await supabase.from('scores').upsert(
+				{
+					user_id: auth.user.id,
+					game_type: 'utslagsfragan',
+					raw_value: result
+				},
+				{
+					onConflict: 'user_id,game_type'
+				}
+			);
+
+			if (error) throw error;
+
+			submitted = true;
+
+			setTimeout(() => {
+				goto('/dashboard');
+			}, 3000);
+		} catch (err: any) {
+			console.error('Fel vid inskickning:', err);
+			alert('Fel: ' + (err.message || JSON.stringify(err)));
+		} finally {
+			loading = false;
+		}
+	}
+
+	function formatCurrency(num: number): string {
+		return num.toLocaleString('sv-SE') + ' kr';
+	}
+</script>
+
+<div class="min-h-screen bg-gradient-to-br from-base-300 via-base-100 to-base-300 p-4">
+	<div class="mx-auto max-w-2xl">
+		<!-- Header -->
+		<div class="mb-6" in:fly={{ y: -20, duration: 500 }}>
+			<a href="/dashboard" class="btn mb-4 btn-ghost btn-sm"> ← Tillbaka </a>
+			<h1 class="flex items-center gap-2 text-4xl font-bold">🎲 Utslagsfrågan</h1>
+			<p class="mt-2 text-base-content/70">Gissa rätt svar - den som är närmast vinner!</p>
+		</div>
+
+		<!-- Question Card -->
+		<div
+			class="card border border-purple-500/30 bg-gradient-to-br from-purple-900/50 to-pink-900/50 shadow-2xl backdrop-blur-sm"
+			in:fly={{ y: 20, duration: 500, delay: 100 }}
+		>
+			<div class="card-body">
+				<!-- Question Icon -->
+				<div class="mb-4 text-center">
+					<div class="animate-pulse text-8xl">🤔</div>
+				</div>
+
+				<!-- The Question -->
+				<div class="mb-6 text-center">
+					<h2 class="mb-2 text-2xl font-bold text-purple-200">Frågan:</h2>
+					<p
+						class="bg-base-900/50 rounded-xl border border-purple-400/30 p-4 text-xl font-medium text-white"
+					>
+						{QUESTION}
+					</p>
+				</div>
+
+				<!-- Answer Input -->
+				<div class="form-control">
+					<label class="label" for="answerInput">
+						<span class="label-text font-medium text-purple-200">💰 Ditt svar (i kronor)</span>
+					</label>
+					<div class="join w-full">
+						<input
+							id="answerInput"
+							type="number"
+							min="0"
+							step="1000"
+							placeholder="Ange din gissning..."
+							class="input-bordered input join-item w-full text-lg input-primary"
+							bind:value={userAnswer}
+							disabled={submitted}
+						/>
+						<span class="btn btn-disabled join-item bg-base-300">kr</span>
+					</div>
+					{#if userAnswer !== null && userAnswer > 0}
+						<label class="label">
+							<span class="label-text-alt text-purple-300">
+								Din gissning: {formatCurrency(userAnswer)}
+							</span>
+						</label>
+					{/if}
+				</div>
+
+				{#if result !== null && submitted}
+					<div class="mt-6 text-center" transition:fly={{ y: 20, duration: 400 }}>
+						<div class="stats bg-base-200/80 shadow backdrop-blur-sm">
+							<div class="stat">
+								<div class="stat-title">Avvikelse från rätt svar</div>
+								<div
+									class="stat-value {result === 0
+										? 'text-success'
+										: result < 10
+											? 'text-warning'
+											: 'text-error'}"
+								>
+									{result}%
+								</div>
+								<div class="stat-desc">
+									{#if result === 0}
+										🎉 Perfekt! Du gissade exakt rätt!
+									{:else if result < 5}
+										🔥 Otroligt nära!
+									{:else if result < 15}
+										👍 Bra gissning!
+									{:else if result < 30}
+										😅 Inte helt fel...
+									{:else}
+										🫣 Hmm, lite vid sidan om
+									{/if}
+								</div>
+							</div>
+						</div>
+
+						<div class="mt-4 alert alert-success">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-6 w-6 shrink-0 stroke-current"
+								fill="none"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+								/>
+							</svg>
+							<span>Svaret inskickat! Omdirigerar...</span>
+						</div>
+					</div>
+				{:else if userAnswer !== null && userAnswer > 0}
+					<div class="mt-6" transition:fly={{ y: 20, duration: 400 }}>
+						<button
+							onclick={submitAnswer}
+							class="btn w-full border-0 bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg transition-all btn-lg hover:scale-105 hover:shadow-purple-500/50"
+							disabled={loading}
+						>
+							{#if loading}
+								<span class="loading loading-spinner"></span>
+								Skickar...
+							{:else}
+								🎲 Skicka in svar
+							{/if}
+						</button>
+					</div>
+				{/if}
+
+				<!-- Info -->
+				<div class="mt-6 text-center text-sm text-purple-300/70">
+					💡 Tips: Ju närmare det korrekta svaret, desto lägre avvikelse och bättre placering!
+				</div>
+			</div>
+		</div>
+
+		<!-- How it works -->
+		<div
+			class="mt-6 rounded-xl border border-base-300 bg-base-200/80 p-4 text-sm text-base-content/70 backdrop-blur-sm"
+			in:fly={{ y: 20, duration: 500, delay: 200 }}
+		>
+			<h3 class="mb-2 font-semibold">📊 Så räknas poängen:</h3>
+			<ul class="list-inside list-disc space-y-1">
+				<li>Din avvikelse beräknas som procent från rätt svar</li>
+				<li>0% avvikelse = Perfekt gissning</li>
+				<li>Lägst avvikelse = Flest poäng på topplistan</li>
+			</ul>
+		</div>
+	</div>
+</div>

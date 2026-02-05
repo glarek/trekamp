@@ -1,0 +1,148 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { authStore } from '$lib/stores/authStore';
+	import { supabase } from '$lib/supabase';
+	import { fly } from 'svelte/transition';
+
+	let auth = $state({ user: null as any, isAuthenticated: false });
+	let deleteConfirmation = $state('');
+	let deleting = $state(false);
+	let showDeleteModal = $state(false);
+
+	onMount(() => {
+		const unsubscribe = authStore.subscribe((value) => {
+			auth = value;
+		});
+
+		if (!auth.isAuthenticated) {
+			goto('/');
+		}
+
+		return unsubscribe;
+	});
+
+	async function deleteUser() {
+		if (deleteConfirmation.toLowerCase() !== 'radera') {
+			alert('Du måste skriva "radera" för att bekräfta');
+			return;
+		}
+
+		if (!auth.user) return;
+
+		deleting = true;
+
+		try {
+			// Delete user's scores first
+			await supabase.from('scores').delete().eq('user_id', auth.user.id);
+
+			// Delete user
+			const { error } = await supabase.from('users').delete().eq('id', auth.user.id);
+
+			if (error) throw error;
+
+			// Logout and redirect
+			authStore.logout();
+			goto('/');
+		} catch (err: any) {
+			console.error('Fel vid radering:', err);
+			alert('Kunde inte radera användaren. Försök igen.');
+		} finally {
+			deleting = false;
+		}
+	}
+</script>
+
+<div class="min-h-screen bg-gradient-to-br from-base-300 via-base-100 to-base-300 p-4">
+	<div class="mx-auto max-w-2xl">
+		<!-- Header -->
+		<div class="mb-6" in:fly={{ y: -20, duration: 500 }}>
+			<a href="/dashboard" class="btn mb-4 btn-ghost btn-sm"> ← Tillbaka </a>
+			<h1 class="text-4xl font-bold">⚙️ Inställningar</h1>
+			<p class="mt-2 text-base-content/70">Hantera din profil</p>
+		</div>
+
+		<!-- User Info -->
+		<div class="card mb-6 bg-base-200 shadow-xl" in:fly={{ y: 20, duration: 500, delay: 100 }}>
+			<div class="card-body">
+				<h2 class="card-title">👤 Din profil</h2>
+				{#if auth.user}
+					<div class="flex items-center gap-4 py-4">
+						<div class="placeholder avatar">
+							<div class="w-16 rounded-full bg-primary text-2xl text-primary-content">
+								<span>{auth.user.name.charAt(0).toUpperCase()}</span>
+							</div>
+						</div>
+						<div>
+							<p class="text-xl font-bold">{auth.user.name}</p>
+							<p class="text-sm text-base-content/70">Spelare sedan du gick med</p>
+						</div>
+					</div>
+				{/if}
+			</div>
+		</div>
+
+		<!-- Danger Zone -->
+		<div
+			class="card border border-error/30 bg-error/10 shadow-xl"
+			in:fly={{ y: 20, duration: 500, delay: 200 }}
+		>
+			<div class="card-body">
+				<h2 class="card-title text-error">⚠️ Farozonen</h2>
+				<p class="mb-4 text-base-content/70">Dessa åtgärder kan inte ångras. Var försiktig!</p>
+
+				<button onclick={() => (showDeleteModal = true)} class="btn btn-outline btn-error">
+					🗑️ Ta bort min användare
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Delete User Modal -->
+{#if showDeleteModal}
+	<div class="modal-open modal">
+		<div class="modal-box" transition:fly={{ y: 20, duration: 300 }}>
+			<h3 class="text-lg font-bold text-error">⚠️ Radera användare</h3>
+			<p class="py-4">
+				Är du säker på att du vill radera din användare? Detta kommer ta bort alla dina poäng och
+				speldata permanent.
+			</p>
+			<p class="mb-4 text-sm text-base-content/70">
+				Skriv <strong class="text-error">"radera"</strong> nedan för att bekräfta:
+			</p>
+
+			<input
+				type="text"
+				placeholder="Skriv radera..."
+				class="input-bordered input mb-4 w-full input-error"
+				bind:value={deleteConfirmation}
+			/>
+
+			<div class="modal-action">
+				<button
+					class="btn btn-ghost"
+					onclick={() => {
+						showDeleteModal = false;
+						deleteConfirmation = '';
+					}}
+				>
+					Avbryt
+				</button>
+				<button
+					class="btn btn-error"
+					onclick={deleteUser}
+					disabled={deleting || deleteConfirmation.toLowerCase() !== 'radera'}
+				>
+					{#if deleting}
+						<span class="loading loading-spinner"></span>
+						Raderar...
+					{:else}
+						🗑️ Radera permanent
+					{/if}
+				</button>
+			</div>
+		</div>
+		<div class="modal-backdrop" onclick={() => (showDeleteModal = false)}></div>
+	</div>
+{/if}
