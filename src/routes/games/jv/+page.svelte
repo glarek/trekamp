@@ -64,7 +64,7 @@
 	const quickBalances = [0, 50, 100, 150, 200, 250];
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-base-300 via-base-100 to-base-300 p-4">
+<div class="min-h-screen bg-linear-to-br from-base-300 via-base-100 to-base-300 p-4">
 	<div class="mx-auto max-w-2xl">
 		<!-- Header -->
 		<div class="mb-6" in:fly={{ y: -20, duration: 500 }}>

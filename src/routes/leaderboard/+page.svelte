@@ -230,36 +230,28 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-base-300 via-base-100 to-base-300 p-4">
+<div class="min-h-screen bg-linear-to-br from-base-300 via-base-100 to-base-300 p-4">
 	<div class="mx-auto max-w-6xl">
 		<!-- Header -->
-		<div
-			class="mb-6 flex flex-wrap items-center justify-between gap-4"
-			in:fly={{ y: -20, duration: 500 }}
-		>
-			<div>
+		<div class="mb-6 flex items-center justify-between gap-2" in:fly={{ y: -20, duration: 500 }}>
+			<div class="flex items-center gap-2">
 				<h1
-					class="flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-4xl font-bold text-transparent"
+					class="bg-linear-to-r from-yellow-400 to-yellow-600 bg-clip-text text-2xl font-bold text-transparent"
 				>
 					🏆 Topplista
 				</h1>
-				<p class="mt-2 flex items-center gap-2 text-base-content/70">
-					{#if !loading}
-						<span class="relative flex h-3 w-3">
-							<span
-								class="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75"
-							></span>
-							<span class="relative inline-flex h-3 w-3 rounded-full bg-success"></span>
-						</span>
-						Live uppdateringar
-					{/if}
-				</p>
+				{#if !loading}
+					<span class="relative flex h-2 w-2">
+						<span
+							class="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75"
+						></span>
+						<span class="relative inline-flex h-2 w-2 rounded-full bg-success"></span>
+					</span>
+				{/if}
 			</div>
-			<div class="flex gap-2">
-				<button onclick={() => (showResetModal = true)} class="btn btn-outline btn-sm btn-error">
-					🗑️ Återställ
-				</button>
-				<a href="/dashboard" class="btn btn-ghost btn-sm"> ← Tillbaka </a>
+			<div class="flex gap-1">
+				<a href="/settings" class="btn btn-square btn-ghost btn-sm" title="Inställningar"> ⚙️ </a>
+				<a href="/dashboard" class="btn btn-square btn-ghost btn-sm" title="Tillbaka"> ← </a>
 			</div>
 		</div>
 
@@ -270,18 +262,18 @@
 		{:else}
 			<!-- Leaderboard Table -->
 			<div class="overflow-x-auto rounded-xl" in:fly={{ y: 20, duration: 500, delay: 100 }}>
-				<table class="table w-full table-zebra table-lg">
+				<table class="table w-full table-zebra table-xs md:table-sm">
 					<thead class="bg-base-200">
-						<tr>
-							<th>Plats</th>
-							<th>Spelare</th>
-							<th class="text-center">Poäng</th>
-							<th class="text-center">🍺</th>
-							<th class="text-center">🎯</th>
-							<th class="text-center">💰</th>
-							<th class="text-center">🎲</th>
-							<th class="text-center">🍑</th>
-							<th class="text-center"></th>
+						<tr class="text-[10px] md:text-sm">
+							<th class="px-1 md:px-4">#</th>
+							<th class="px-1 md:px-4">Namn</th>
+							<th class="px-1 text-center md:px-4">P</th>
+							<th class="px-1 text-center md:px-4">🍺</th>
+							<th class="px-1 text-center md:px-4">🎯</th>
+							<th class="px-1 text-center md:px-4">💰</th>
+							<th class="px-1 text-center md:px-4">🎲</th>
+							<th class="px-1 text-center md:px-4">🍑</th>
+							<th class="px-1 md:px-4"></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -290,68 +282,73 @@
 								class={entry.id === auth.user?.id ? 'bg-primary/20 font-bold' : ''}
 								in:scale={{ duration: 400, delay: i * 50 }}
 							>
-								<td class="text-2xl"
+								<td class="px-1 text-xl md:px-4"
 									>{getRankDisplay(
 										i,
 										entry.total_score,
 										leaderboard.map((e) => e.total_score)
 									)}</td
 								>
-								<td>
-									<div class="flex items-center gap-2">
-										<span class="font-medium">{entry.name}</span>
+								<td class="max-w-[80px] px-1 md:max-w-none md:px-4">
+									<div class="flex items-center gap-1 overflow-hidden">
+										<span class="truncate font-medium">{entry.name}</span>
 										{#if entry.id === auth.user?.id}
-											<span class="badge badge-sm badge-primary">Du</span>
+											<span class="text-[10px] opacity-70">★</span>
 										{/if}
 									</div>
 								</td>
-								<td class="text-center">
-									<div class="badge badge-lg font-bold badge-primary">
-										{entry.total_score} p
-									</div>
+								<td class="px-1 text-center md:px-4">
+									<span class="font-bold whitespace-nowrap">{entry.total_score}p</span>
 								</td>
-								<td class="text-center">
+								<td class="px-0 text-center md:px-2">
 									{#if entry.split_g !== null}
-										<span class="badge badge-accent">{entry.split_g}</span>
+										<span class="text-xs whitespace-nowrap md:text-sm">{entry.split_g}</span>
 									{:else}
-										<span class="text-base-content/30">-</span>
+										<span class="text-base-content/20">-</span>
 									{/if}
 								</td>
-								<td class="text-center">
+								<td class="px-0 text-center md:px-2">
 									{#if entry.dart !== null}
-										<span class="badge badge-secondary">{entry.dart}</span>
+										<span class="text-xs whitespace-nowrap md:text-sm">{entry.dart}</span>
 									{:else}
-										<span class="text-base-content/30">-</span>
+										<span class="text-base-content/20">-</span>
 									{/if}
 								</td>
-								<td class="text-center">
+								<td class="px-0 text-center md:px-2">
 									{#if entry.jv !== null}
-										<span class="badge badge-warning">{entry.jv >= 0 ? '+' : ''}{entry.jv}</span>
+										<span
+											class="text-xs whitespace-nowrap md:text-sm {entry.jv >= 0
+												? 'text-success'
+												: 'text-error'}"
+										>
+											{entry.jv >= 0 ? '+' : ''}{entry.jv}
+										</span>
 									{:else}
-										<span class="text-base-content/30">-</span>
+										<span class="text-base-content/20">-</span>
 									{/if}
 								</td>
-								<td class="text-center">
+								<td class="px-0 text-center md:px-2">
 									{#if entry.utslagsfragan !== null}
-										<span
-											class="badge border-0 bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+										<span class="text-[10px] whitespace-nowrap md:text-xs"
 											>{entry.utslagsfragan}%</span
 										>
 									{:else}
-										<span class="text-base-content/30">-</span>
+										<span class="text-base-content/20">-</span>
 									{/if}
 								</td>
-								<td class="text-center">
-									{#if entry.ass_count > 0}
-										<span class="badge badge-error">{entry.ass_count}</span>
-									{:else}
-										<span class="text-base-content/30">0</span>
-									{/if}
+								<td class="px-0 text-center md:px-2">
+									<span
+										class="text-xs md:text-sm {entry.ass_count > 0
+											? 'text-error'
+											: 'text-base-content/20'}"
+									>
+										{entry.ass_count || 0}
+									</span>
 								</td>
-								<td class="text-center">
+								<td class="px-0 text-center md:px-2">
 									<button
 										onclick={() => callAss(entry.id)}
-										class="btn btn-ghost btn-xs hover:btn-error"
+										class="btn h-6 min-h-0 w-6 p-0 btn-ghost btn-xs"
 										title="Kalla dem för en röv!"
 									>
 										🍑
@@ -374,23 +371,27 @@
 				</div>
 			{/if}
 
-			<!-- Scoring Info -->
-			<div
-				class="mt-8 rounded-xl border border-base-300 bg-base-200/80 p-6 backdrop-blur-sm"
-				in:fly={{ y: 20, duration: 500, delay: 200 }}
-			>
-				<h3 class="mb-4 text-xl font-bold">📊 Så fungerar poängen</h3>
-				<div class="space-y-2 text-sm text-base-content/80">
-					<p>
-						• <strong>Dynamiskt rankingsystem:</strong> Din placering i varje spel bestämmer dina poäng
-					</p>
-					<p>• Med N spelare får 1:an N poäng, 2:an får N-1 poäng, osv.</p>
-					<p>• <strong>🍺 Split the G:</strong> Högre precision är bättre</p>
-					<p>• <strong>🎯 Dart:</strong> Lägre placering är bättre (1:a slår 2:a)</p>
-					<p>• <strong>💰 JV:</strong> Högre nettovinst är bättre</p>
-					<p>• <strong>🎲 Utslagsfrågan:</strong> Lägst avvikelse (%) är bättre</p>
-					<p>• <strong>🍑 Röv-räknare:</strong> Bara för kul - påverkar inte poängen!</p>
+			<!-- Bottom Actions & Info -->
+			<div class="mt-4 flex flex-col gap-4">
+				<div
+					class="rounded-xl border border-base-300 bg-base-200/80 p-4 backdrop-blur-sm"
+					in:fly={{ y: 20, duration: 500, delay: 200 }}
+				>
+					<h3 class="mb-2 text-sm font-bold">📊 Poängberäkning</h3>
+					<div class="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px] text-base-content/70 md:text-sm">
+						<p>🍺 Split the G: Precision (0-100)</p>
+						<p>🎯 Dart: Placering (1=bäst)</p>
+						<p>💰 JV: Nettovinst (kr)</p>
+						<p>🎲 Utslag: Avvikelse % (0=bäst)</p>
+					</div>
 				</div>
+
+				<button
+					onclick={() => (showResetModal = true)}
+					class="btn mx-auto opacity-30 btn-outline btn-xs btn-error hover:opacity-100"
+				>
+					🗑️ Återställ Topplista
+				</button>
 			</div>
 		{/if}
 	</div>
@@ -437,6 +438,13 @@
 				</button>
 			</div>
 		</div>
-		<div class="modal-backdrop" onclick={() => (showResetModal = false)}></div>
+		<div
+			class="modal-backdrop"
+			onclick={() => (showResetModal = false)}
+			onkeydown={(e) => e.key === 'Escape' && (showResetModal = false)}
+			role="button"
+			tabindex="-1"
+			aria-label="Close modal"
+		></div>
 	</div>
 {/if}

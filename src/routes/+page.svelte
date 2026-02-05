@@ -13,7 +13,7 @@
 </script>
 
 <div
-	class="flex min-h-screen items-center justify-center bg-gradient-to-br from-base-300 via-base-100 to-base-300 p-4"
+	class="flex min-h-screen items-center justify-center bg-linear-to-br from-base-300 via-base-100 to-base-300 p-4"
 >
 	<!-- Floating beer emojis background -->
 	<div class="pointer-events-none fixed inset-0 overflow-hidden opacity-10">
@@ -32,7 +32,7 @@
 			<div class="mb-6 text-center">
 				<div class="mb-4 text-6xl" in:scale={{ duration: 600, delay: 200 }}>🍻</div>
 				<h1
-					class="card-title justify-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-4xl font-bold text-transparent"
+					class="card-title justify-center bg-linear-to-r from-primary to-secondary bg-clip-text text-4xl font-bold text-transparent"
 				>
 					Trekampen
 				</h1>

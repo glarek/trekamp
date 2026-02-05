@@ -7,8 +7,11 @@
 
 	let auth = $state({ user: null as any, isAuthenticated: false });
 	let deleteConfirmation = $state('');
+	let masterResetCode = $state('');
 	let deleting = $state(false);
+	let resettingAll = $state(false);
 	let showDeleteModal = $state(false);
+	let showMasterResetModal = $state(false);
 
 	onMount(() => {
 		const unsubscribe = authStore.subscribe((value) => {
@@ -51,9 +54,45 @@
 			deleting = false;
 		}
 	}
+
+	async function masterReset() {
+		if (masterResetCode !== '666') {
+			alert('Fel kod!');
+			return;
+		}
+
+		resettingAll = true;
+
+		try {
+			// Delete all scores
+			const { error: scoresError } = await supabase
+				.from('scores')
+				.delete()
+				.neq('id', '00000000-0000-0000-0000-000000000000');
+
+			if (scoresError) throw scoresError;
+
+			// Delete all users
+			const { error: usersError } = await supabase
+				.from('users')
+				.delete()
+				.neq('id', '00000000-0000-0000-0000-000000000000');
+
+			if (usersError) throw usersError;
+
+			// Logout and redirect
+			authStore.logout();
+			goto('/');
+		} catch (err: any) {
+			console.error('Master reset failed:', err);
+			alert('Kunde inte genomföra total återställning: ' + err.message);
+		} finally {
+			resettingAll = false;
+		}
+	}
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-base-300 via-base-100 to-base-300 p-4">
+<div class="min-h-screen bg-linear-to-br from-base-300 via-base-100 to-base-300 p-4">
 	<div class="mx-auto max-w-2xl">
 		<!-- Header -->
 		<div class="mb-6" in:fly={{ y: -20, duration: 500 }}>
@@ -91,8 +130,14 @@
 				<h2 class="card-title text-error">⚠️ Farozonen</h2>
 				<p class="mb-4 text-base-content/70">Dessa åtgärder kan inte ångras. Var försiktig!</p>
 
-				<button onclick={() => (showDeleteModal = true)} class="btn btn-outline btn-error">
+				<button onclick={() => (showDeleteModal = true)} class="btn w-full btn-outline btn-error">
 					🗑️ Ta bort min användare
+				</button>
+
+				<div class="divider">ELLER</div>
+
+				<button onclick={() => (showMasterResetModal = true)} class="btn w-full btn-error">
+					💀 Radera ALLA användare (666)
 				</button>
 			</div>
 		</div>
@@ -143,6 +188,68 @@
 				</button>
 			</div>
 		</div>
-		<div class="modal-backdrop" onclick={() => (showDeleteModal = false)}></div>
+		<div
+			class="modal-backdrop"
+			onclick={() => (showDeleteModal = false)}
+			onkeydown={(e) => e.key === 'Escape' && (showDeleteModal = false)}
+			role="button"
+			tabindex="-1"
+			aria-label="Close modal"
+		></div>
+	</div>
+{/if}
+
+<!-- Master Reset Modal -->
+{#if showMasterResetModal}
+	<div class="modal-open modal">
+		<div class="modal-box border-4 border-error" transition:fly={{ y: 20, duration: 300 }}>
+			<h3 class="text-2xl font-bold text-error">💀 TOTAL ÅTERSTÄLLNING</h3>
+			<p class="py-4 font-bold">
+				VARNING! Detta kommer radera SAMTLIGA användare och ALLA poäng i hela systemet. Du kommer
+				även bli utloggad och raderad.
+			</p>
+			<p class="mb-4 text-sm text-base-content/70">
+				Ange master-koden för att genomföra raderingen:
+			</p>
+
+			<input
+				type="password"
+				placeholder="Ange kod..."
+				class="input-bordered input mb-4 w-full text-center text-2xl input-error"
+				bind:value={masterResetCode}
+			/>
+
+			<div class="modal-action">
+				<button
+					class="btn btn-ghost"
+					onclick={() => {
+						showMasterResetModal = false;
+						masterResetCode = '';
+					}}
+				>
+					Ångra mig!
+				</button>
+				<button
+					class="btn btn-error"
+					onclick={masterReset}
+					disabled={resettingAll || masterResetCode !== '666'}
+				>
+					{#if resettingAll}
+						<span class="loading loading-spinner"></span>
+						Raderar allt...
+					{:else}
+						🔥 RADERA ALLT
+					{/if}
+				</button>
+			</div>
+		</div>
+		<div
+			class="modal-backdrop"
+			onclick={() => (showMasterResetModal = false)}
+			onkeydown={(e) => e.key === 'Escape' && (showMasterResetModal = false)}
+			role="button"
+			tabindex="-1"
+			aria-label="Close modal"
+		></div>
 	</div>
 {/if}

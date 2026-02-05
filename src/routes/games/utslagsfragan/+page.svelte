@@ -74,7 +74,7 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-base-300 via-base-100 to-base-300 p-4">
+<div class="min-h-screen bg-linear-to-br from-base-300 via-base-100 to-base-300 p-4">
 	<div class="mx-auto max-w-2xl">
 		<!-- Header -->
 		<div class="mb-6" in:fly={{ y: -20, duration: 500 }}>
@@ -85,7 +85,7 @@
 
 		<!-- Question Card -->
 		<div
-			class="card border border-purple-500/30 bg-gradient-to-br from-purple-900/50 to-pink-900/50 shadow-2xl backdrop-blur-sm"
+			class="card border border-purple-500/30 bg-linear-to-br from-purple-900/40 via-base-200/80 to-pink-900/40 shadow-2xl backdrop-blur-md"
 			in:fly={{ y: 20, duration: 500, delay: 100 }}
 		>
 			<div class="card-body">
@@ -123,11 +123,11 @@
 						<span class="btn btn-disabled join-item bg-base-300">kr</span>
 					</div>
 					{#if userAnswer !== null && userAnswer > 0}
-						<label class="label">
+						<div class="label">
 							<span class="label-text-alt text-purple-300">
 								Din gissning: {formatCurrency(userAnswer)}
 							</span>
-						</label>
+						</div>
 					{/if}
 				</div>
 
@@ -182,7 +182,7 @@
 					<div class="mt-6" transition:fly={{ y: 20, duration: 400 }}>
 						<button
 							onclick={submitAnswer}
-							class="btn w-full border-0 bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg transition-all btn-lg hover:scale-105 hover:shadow-purple-500/50"
+							class="btn border-0 bg-linear-to-r from-purple-600 to-pink-600 font-bold text-white shadow-lg transition-all hover:scale-105 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50"
 							disabled={loading}
 						>
 							{#if loading}

@@ -55,13 +55,13 @@
 	];
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-base-300 via-base-100 to-base-300 p-4">
+<div class="min-h-screen bg-linear-to-br from-base-300 via-base-100 to-base-300 p-4">
 	<div class="mx-auto max-w-4xl">
 		<!-- Header -->
 		<div class="mb-8 flex items-center justify-between" in:fly={{ y: -20, duration: 500 }}>
 			<div>
 				<h1
-					class="flex items-center gap-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-4xl font-bold text-transparent"
+					class="flex items-center gap-2 bg-linear-to-r from-primary to-secondary bg-clip-text text-4xl font-bold text-transparent"
 				>
 					🍻 Trekampen
 				</h1>
@@ -71,9 +71,11 @@
 					</p>
 				{/if}
 			</div>
-			<div class="flex gap-2">
-				<a href="/settings" class="btn btn-ghost btn-sm"> ⚙️ Inställningar </a>
-				<button onclick={handleLogout} class="btn btn-ghost btn-sm"> 🚪 Logga ut </button>
+			<div class="flex gap-1">
+				<a href="/settings" class="btn btn-square btn-ghost btn-sm" title="Inställningar"> ⚙️ </a>
+				<button onclick={handleLogout} class="btn btn-square btn-ghost btn-sm" title="Logga ut">
+					🚪
+				</button>
 			</div>
 		</div>
 

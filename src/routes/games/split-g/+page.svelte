@@ -8,6 +8,8 @@
 	let auth = $state({ user: null as any, isAuthenticated: false });
 	let imageElement: HTMLImageElement;
 	let clickY = $state<number | null>(null);
+	let previewY = $state<number | null>(null); // For showing line while dragging
+	let isDragging = $state(false);
 	let score = $state<number | null>(null);
 	let loading = $state(false);
 	let submitted = $state(false);
@@ -26,19 +28,59 @@
 		return unsubscribe;
 	});
 
-	function handleImageClick(event: MouseEvent) {
-		if (submitted || !imageElement) return;
-
+	function getRelativeY(clientY: number): number {
+		if (!imageElement) return 0;
 		const rect = imageElement.getBoundingClientRect();
-		const y = event.clientY - rect.top;
-		const relativeY = y / rect.height;
+		const y = clientY - rect.top;
+		return y / rect.height;
+	}
 
-		clickY = relativeY;
+	function handleStart(event: MouseEvent | TouchEvent) {
+		if (submitted) return;
 
-		// Calculate score - closer to perfect position = better score
-		const difference = Math.abs(relativeY - PERFECT_POSITION);
-		// Score is 0-100, where 100 is perfect
-		score = Math.max(0, Math.round((1 - difference * 2) * 100));
+		isDragging = true;
+
+		// Prevent scrolling on touch devices
+		if ('touches' in event) {
+			event.preventDefault();
+		}
+
+		const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
+		previewY = getRelativeY(clientY);
+	}
+
+	function handleMove(event: MouseEvent | TouchEvent) {
+		if (!isDragging || submitted) return;
+
+		// Prevent scrolling while dragging
+		event.preventDefault();
+
+		const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
+		previewY = getRelativeY(clientY);
+	}
+
+	function handleEnd(event: MouseEvent | TouchEvent) {
+		if (!isDragging || submitted) return;
+
+		// Prevent default action
+		if ('touches' in event || 'changedTouches' in event) {
+			event.preventDefault();
+		}
+
+		isDragging = false;
+
+		if (previewY !== null) {
+			clickY = previewY;
+
+			// Calculate score - closer to perfect position = better score
+			const difference = Math.abs(clickY - PERFECT_POSITION);
+			score = Math.max(0, Math.round((1 - difference * 2) * 100));
+		}
+	}
+
+	function handleCancel() {
+		isDragging = false;
+		previewY = null;
 	}
 
 	async function submitScore() {
@@ -74,7 +116,7 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-base-300 via-base-100 to-base-300 p-4">
+<div class="min-h-screen bg-linear-to-br from-base-300 via-base-100 to-base-300 p-4">
 	<div class="mx-auto max-w-2xl">
 		<!-- Header -->
 		<div class="mb-6" in:fly={{ y: -20, duration: 500 }}>
@@ -92,23 +134,48 @@
 				<div class="relative mx-auto w-full max-w-md">
 					<!-- Guinness Glass Image Container -->
 					<div
-						class="relative cursor-pointer overflow-hidden rounded-xl shadow-2xl select-none"
-						onclick={handleImageClick}
+						class="relative overflow-hidden rounded-xl shadow-2xl select-none {isDragging
+							? 'cursor-grabbing'
+							: 'cursor-grab'}"
+						style="touch-action: none;"
+						onmousedown={handleStart}
+						onmousemove={handleMove}
+						onmouseup={handleEnd}
+						onmouseleave={handleCancel}
+						ontouchstart={handleStart}
+						ontouchmove={handleMove}
+						ontouchend={handleEnd}
+						ontouchcancel={handleCancel}
 						role="button"
 						tabindex="0"
-						onkeydown={(e) => e.key === 'Enter' && handleImageClick(e as any)}
+						aria-label="Tryck och dra för att placera linjen på Guinness-glaset"
 					>
 						<!-- The actual Guinness glass image -->
 						<img
 							bind:this={imageElement}
 							src="/guinness-glass.jpg"
 							alt="Guinness Glas"
-							class="block h-auto w-full"
+							class="pointer-events-none block h-auto w-full"
 							draggable="false"
 						/>
 
+						<!-- Preview line while dragging -->
+						{#if isDragging && previewY !== null}
+							<div
+								class="pointer-events-none absolute right-0 left-0 animate-pulse border-t-2 border-dashed border-warning"
+								style="top: {previewY * 100}%"
+								transition:fly={{ x: -30, duration: 150 }}
+							>
+								<div
+									class="absolute -top-6 right-2 rounded bg-warning px-2 py-1 text-xs font-bold text-warning-content shadow-lg"
+								>
+									Dra här
+								</div>
+							</div>
+						{/if}
+
 						<!-- Click indicator line - positioned absolutely over image -->
-						{#if clickY !== null}
+						{#if clickY !== null && !isDragging}
 							<div
 								class="pointer-events-none absolute right-0 left-0 border-t-2 border-dashed border-error"
 								style="top: {clickY * 100}%"
@@ -123,7 +190,7 @@
 						{/if}
 
 						<!-- Perfect position indicator (shown after click) -->
-						{#if clickY !== null}
+						{#if clickY !== null && !isDragging}
 							<div
 								class="pointer-events-none absolute right-0 left-0 border-t-2 border-dashed border-success"
 								style="top: {PERFECT_POSITION * 100}%"
@@ -192,7 +259,7 @@
 
 				<!-- Hint -->
 				<div class="mt-4 text-center text-sm text-base-content/50">
-					💡 Tips: Tryck där du tror att skummet delar sig på Guinness-glaset
+					💡 Tips: Håll och dra för att placera linjen där skummet delar sig på Guinness-glaset
 				</div>
 			</div>
 		</div>
