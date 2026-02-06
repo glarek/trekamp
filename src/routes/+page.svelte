@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { supabase } from '$lib/supabase';
 	import { authStore } from '$lib/stores/authStore';
 	import { fly, scale } from 'svelte/transition';
+	import { getCookie, setCookie } from '$lib/utils/cookies';
 
 	let username = $state('');
 	let accessCode = $state('');
@@ -10,6 +12,37 @@
 	let loading = $state(false);
 
 	const ACCESS_CODE = '1234';
+
+	// Try auto-login on mount
+	onMount(async () => {
+		const savedUsername = getCookie('trekamp_username');
+		const savedCode = getCookie('trekamp_code');
+
+		if (savedUsername && savedCode === ACCESS_CODE) {
+			username = savedUsername;
+			accessCode = savedCode;
+
+			// Attempt auto-login
+			loading = true;
+			try {
+				const { data: existingUser } = await supabase
+					.from('users')
+					.select('*')
+					.eq('name', savedUsername.trim())
+					.single();
+
+				if (existingUser) {
+					authStore.login(existingUser);
+					goto('/dashboard');
+				}
+			} catch (err) {
+				// Silent fail - user will need to login manually
+				console.log('Auto-login failed, manual login required');
+			} finally {
+				loading = false;
+			}
+		}
+	});
 </script>
 
 <div
@@ -85,6 +118,10 @@
 							user = newUser;
 						}
 
+						// Save credentials to cookies
+						setCookie('trekamp_username', username.trim());
+						setCookie('trekamp_code', accessCode);
+
 						authStore.login(user);
 						goto('/dashboard');
 					} catch (err: any) {
@@ -97,7 +134,7 @@
 				class="space-y-4"
 			>
 				<div class="form-control">
-					<label class="label" for="username">
+					<label class="label mb-2" for="username">
 						<span class="label-text font-medium">👤 Användarnamn</span>
 					</label>
 					<input
@@ -112,7 +149,7 @@
 				</div>
 
 				<div class="form-control">
-					<label class="label" for="accessCode">
+					<label class="label mb-2" for="accessCode">
 						<span class="label-text font-medium">🔑 Åtkomstkod</span>
 					</label>
 					<input
@@ -155,15 +192,11 @@
 							<span class="loading loading-spinner"></span>
 							Laddar...
 						{:else}
-							🚀 Kör igång!
+							FKB
 						{/if}
 					</button>
 				</div>
 			</form>
-
-			<div class="mt-4 text-center text-sm text-base-content/50">
-				<p>💡 Tips: Koden är 1234</p>
-			</div>
 		</div>
 	</div>
 </div>

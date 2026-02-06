@@ -19,40 +19,23 @@ _No active tasks at the moment._
 
 **Status:** ✅ All tasks completed successfully!
 
-**Completed Actions:**
+### Session 5 (2026-02-06 - Font & UI Updates)
 
-### Session 3: Mobile UX Improvements
+1. ✅ **Redesigned game cards** - Removed the "Spela nu" button and made entire card clickable. Game name is now prominently displayed as the main heading with description below.
+2. ✅ **Permanent Marker font applied** - All headers (h1-h6) now use the Permanent Marker font for a fun, playful look.
+3. ✅ **Rethink Sans font applied** - All regular text now uses Rethink Sans Variable for clean, modern readability.
+4. ✅ **Fixed Font Flash** - Moved font imports from CSS `@import` to JS imports in `+layout.svelte` to ensure they are bundled more efficiently and reduce flickering during navigation.
 
-1. ✅ **Mobile-Optimized Leaderboard** - Compact table with smaller fonts, removed badges, truncated names
-2. ✅ **Compact Navigation** - Icon-only Settings (⚙️) and Logout (🚪) buttons
-3. ✅ **Safe Reset Button** - Moved to bottom with low opacity (30%) to prevent accidental clicks
-4. ✅ **Drag-to-Place Interaction** - Split the G now uses touch/drag for better mobile UX
-   - Live preview line while dragging (yellow/warning)
-   - Works on both mobile touch and desktop mouse
-   - Visual feedback with "Dra här" label
-   - **Fixed:** Forced `touch-action: none` and `preventDefault()` to stop page scrolling while dragging.
+### Session 4 (2026-02-06)
 
-### Session 2: Utslagsfrågan Game
-
-1. ✅ **Created new game "Utslagsfrågan"** at `/games/utslagsfragan`
-2. ✅ **Question:** "Vad var Titus lön under inkomståret 2024? Total lön."
-3. ✅ **Correct answer:** 762100 kr
-4. ✅ **Scoring:** Percentage difference from correct answer (lower is better)
-5. ✅ **Leaderboard integration:** Displayed as % with gradient badge
-6. ✅ **Points system:** Lowest % gets highest points (same as dart)
-7. ✅ **Graphics:** Purple/pink gradient theme with 🎲 icon
-8. ✅ **Database constraint:** Updated game_type CHECK constraint
-
-### Session 1: Swedish Bar Game
-
-- ✅ **Swedish Translation** - All UI text translated to Swedish
-- ✅ **Centered Layout** - Improved with gradient backgrounds and backdrop blur
-- ✅ **Scrollbar Fix** - Added CSS fixes for hover animations
-- ✅ **Reset Leaderboard Button** - Added with "radera" confirmation modal
-- ✅ **Delete User Button** - Added in settings page with "radera" confirmation
-- ✅ **Improved Graphics** - Added gradients, floating emojis, better animations, bar game vibe
-- ✅ **Dart Game Info** - Added rules explaining 101 points, 3 darts, no double needed (in Swedish)
-- ✅ **Ass Counter Button** - Added 🍑 button on leaderboard to call someone an "ass" with counter display
+1. ✅ **Cookie-based login persistence** - Username and access code are now saved in cookies that never expire. Users are automatically logged in on return visits.
+2. ✅ **Login page spacing** - Added proper spacing (mb-2) between labels and input fields for better visual hierarchy.
+3. ✅ **Swedish grammar fix** - Changed "Din tryck" to "Ditt tryck" on the Split the G game page.
+4. ✅ **Game images with fallback** - Implemented image support for all games with automatic fallback to emoji icons if images fail to load. Image files needed in `/static`:
+   - `split-g-game.jpg`
+   - `dart-game.jpg`
+   - `jv-game.jpg`
+   - `utslagsfragan-game.jpg`
 
 ---
 

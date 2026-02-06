@@ -172,7 +172,7 @@
 									<span class="loading loading-spinner"></span>
 									Skickar...
 								{:else}
-									✅ Skicka in resultat
+									✅ Skicka in
 								{/if}
 							</button>
 						{:else}

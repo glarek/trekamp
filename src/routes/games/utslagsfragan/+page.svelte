@@ -189,7 +189,7 @@
 								<span class="loading loading-spinner"></span>
 								Skickar...
 							{:else}
-								🎲 Skicka in svar
+								🎲 Skicka in
 							{/if}
 						</button>
 					</div>

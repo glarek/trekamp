@@ -1,4 +1,6 @@
 <script lang="ts">
+	import '@fontsource/permanent-marker';
+	import '@fontsource-variable/rethink-sans';
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 

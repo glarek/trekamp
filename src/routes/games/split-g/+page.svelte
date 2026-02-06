@@ -14,7 +14,7 @@
 	let loading = $state(false);
 	let submitted = $state(false);
 
-	const PERFECT_POSITION = 0.35; // 35% down from top is the "perfect" split
+	const PERFECT_POSITION = 0.555; // 35% down from top is the "perfect" split
 
 	onMount(() => {
 		const unsubscribe = authStore.subscribe((value) => {
@@ -121,8 +121,22 @@
 		<!-- Header -->
 		<div class="mb-6" in:fly={{ y: -20, duration: 500 }}>
 			<a href="/dashboard" class="btn mb-4 btn-ghost btn-sm"> ← Tillbaka </a>
-			<h1 class="flex items-center gap-2 text-4xl font-bold">🍺 Split the G</h1>
-			<p class="mt-2 text-base-content/70">Tryck på glaset där du tror att skumgränsen ligger</p>
+			<h1 class="flex items-center justify-center gap-2 text-4xl font-bold">Split the G</h1>
+			<p class="mt-2 flex justify-center text-base-content/70">Placera linjen vid din skumgräns</p>
+		</div>
+
+		<div
+			class="card mb-6 border border-info/30 bg-info/10 shadow-xl"
+			in:fly={{ y: 20, duration: 500, delay: 50 }}
+		>
+			<div class="card-body">
+				<h2 class="card-title text-info">📋 Spelregler</h2>
+				<div class="space-y-2 text-sm">
+					<p>🍺 Drick tills du prickar mitten av G:et.</p>
+					<p>🍺 Drick i ett svep.</p>
+					<p>🍺 Storkukspoäng för den som dricker allt i <strong>en klunk.</strong></p>
+				</div>
+			</div>
 		</div>
 
 		<!-- Game Area -->
@@ -184,7 +198,7 @@
 								<div
 									class="absolute -top-6 right-2 rounded bg-error px-2 py-1 text-xs font-bold text-error-content shadow-lg"
 								>
-									Din tryck
+									Ditt tryck
 								</div>
 							</div>
 						{/if}
@@ -233,7 +247,7 @@
 									<span class="loading loading-spinner"></span>
 									Skickar...
 								{:else}
-									✅ Skicka in resultat
+									✅ Skicka in
 								{/if}
 							</button>
 						{:else}

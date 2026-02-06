@@ -3,6 +3,21 @@
 @plugin '@tailwindcss/typography';
 @plugin 'daisyui';
 
+/* Global font styles */
+body {
+	font-family: 'Rethink Sans Variable', sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-header {
+	font-family: 'Permanent Marker', cursive;
+}
+
 /* Fix scrollbar issues on hover animations */
 html,
 body {

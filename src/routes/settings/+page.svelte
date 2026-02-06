@@ -4,6 +4,7 @@
 	import { authStore } from '$lib/stores/authStore';
 	import { supabase } from '$lib/supabase';
 	import { fly } from 'svelte/transition';
+	import { clearAuthCookies } from '$lib/utils/cookies';
 
 	let auth = $state({ user: null as any, isAuthenticated: false });
 	let deleteConfirmation = $state('');
@@ -45,6 +46,7 @@
 			if (error) throw error;
 
 			// Logout and redirect
+			clearAuthCookies();
 			authStore.logout();
 			goto('/');
 		} catch (err: any) {
@@ -81,6 +83,7 @@
 			if (usersError) throw usersError;
 
 			// Logout and redirect
+			clearAuthCookies();
 			authStore.logout();
 			goto('/');
 		} catch (err: any) {
