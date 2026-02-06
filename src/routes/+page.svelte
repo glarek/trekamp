@@ -5,6 +5,7 @@
 	import { authStore } from '$lib/stores/authStore';
 	import { fly, scale } from 'svelte/transition';
 	import { getCookie, setCookie } from '$lib/utils/cookies';
+	import favicon from '$lib/assets/favicon.svg';
 
 	let username = $state('');
 	let accessCode = $state('');
@@ -62,13 +63,13 @@
 		in:fly={{ y: 20, duration: 500, delay: 100 }}
 	>
 		<div class="card-body">
-			<div class="mb-6 text-center">
-				<div class="mb-4 text-6xl" in:scale={{ duration: 600, delay: 200 }}>🍻</div>
-				<h1
-					class="card-title justify-center bg-linear-to-r from-primary to-secondary bg-clip-text text-4xl font-bold text-transparent"
-				>
-					Trekampen
-				</h1>
+			<div class="align-center mb-6 text-center">
+				<img
+					src={favicon}
+					alt="Favicon"
+					class="speed mx-auto mb-4 h-20 w-24 animate-spin transition-all [animation-duration:3s]"
+				/>
+				<h1 class="card-title justify-center text-4xl font-bold">Trekampen</h1>
 				<p class="mt-2 text-base-content/70">DG's trekamp. Skriv in ditt namn.</p>
 			</div>
 

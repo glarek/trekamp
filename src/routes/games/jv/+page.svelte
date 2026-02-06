@@ -73,33 +73,27 @@
 			<p class="mt-2 text-base-content/70">Spåra dina spelresultat</p>
 		</div>
 
+		<div
+			class="card mb-6 border border-info/30 bg-info/10 shadow-xl"
+			in:fly={{ y: 20, duration: 500, delay: 50 }}
+		>
+			<div class="card-body">
+				<h2 class="card-title text-info">📋 JV-regler</h2>
+				<div class="space-y-2 text-sm">
+					<p>💸 Swisha in 100kr i maskinen.</p>
+					<p>💸 Spela valfria JV-spel.</p>
+					<p>💸 Avsluta när du förlorat alla pengar eller känner dig nöjd med vinsten.</p>
+				</div>
+			</div>
+		</div>
+
 		<!-- Game Area -->
 		<div
 			class="card border border-base-300 bg-base-200/80 shadow-xl backdrop-blur-sm"
 			in:fly={{ y: 20, duration: 500, delay: 100 }}
 		>
 			<div class="card-body">
-				<div class="mb-4 alert alert-info">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						class="h-6 w-6 shrink-0 stroke-current"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-						></path>
-					</svg>
-					<div>
-						<div class="font-bold">💵 Startsaldo: {STARTING_BALANCE} kr</div>
-						<div class="text-xs">Ange ditt nuvarande saldo för att räkna ut nettoresultatet</div>
-					</div>
-				</div>
-
-				<h2 class="mb-4 card-title">💰 Vad är ditt nuvarande saldo?</h2>
+				<h2 class="mb-4 card-title">💰 Vad är ditt avslutande saldo?</h2>
 
 				<!-- Quick Balance Buttons -->
 				<div class="mb-4">
@@ -194,18 +188,6 @@
 					</div>
 				{/if}
 			</div>
-		</div>
-
-		<!-- Tips -->
-		<div
-			class="mt-4 rounded-xl border border-base-300 bg-base-200/80 p-4 text-sm text-base-content/70 backdrop-blur-sm"
-		>
-			<h3 class="mb-2 font-semibold">💡 Tips:</h3>
-			<ul class="list-inside list-disc space-y-1">
-				<li>Inkludera alla dina vinster och förluster</li>
-				<li>Var ärlig - det är bara för kul! 😉</li>
-				<li>Högre saldo = bättre poäng på topplistan</li>
-			</ul>
 		</div>
 	</div>
 </div>
