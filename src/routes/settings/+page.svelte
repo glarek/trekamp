@@ -110,14 +110,20 @@
 				<h2 class="card-title">👤 Din profil</h2>
 				{#if auth.user}
 					<div class="flex items-center gap-4 py-4">
-						<div class="placeholder avatar">
-							<div class="w-16 rounded-full bg-primary text-2xl text-primary-content">
+						<div class="avatar placeholder">
+							<div class="flex items-center justify-center w-16 rounded-full bg-primary text-2xl text-primary-content">
 								<span>{auth.user.name.charAt(0).toUpperCase()}</span>
 							</div>
 						</div>
 						<div>
 							<p class="text-xl font-bold">{auth.user.name}</p>
-							<p class="text-sm text-base-content/70">Spelare sedan du gick med</p>
+							<p class="text-sm text-base-content/70">
+								Spelare sedan {new Date(auth.user.created_at).toLocaleDateString('sv-SE', {
+									year: 'numeric',
+									month: 'long',
+									day: 'numeric'
+								})}
+							</p>
 						</div>
 					</div>
 				{/if}

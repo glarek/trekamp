@@ -13,13 +13,14 @@
 	let loading = $state(false);
 
 	const ACCESS_CODE = '1234';
+	const ADMIN_CODE = '9999';
 
 	// Try auto-login on mount
 	onMount(async () => {
 		const savedUsername = getCookie('trekamp_username');
 		const savedCode = getCookie('trekamp_code');
 
-		if (savedUsername && savedCode === ACCESS_CODE) {
+		if (savedUsername && (savedCode === ACCESS_CODE || savedCode === ADMIN_CODE)) {
 			username = savedUsername;
 			accessCode = savedCode;
 
@@ -33,7 +34,7 @@
 					.single();
 
 				if (existingUser) {
-					authStore.login(existingUser);
+					authStore.login({ ...existingUser, role: savedCode === ADMIN_CODE ? 'admin' : 'user' });
 					goto('/dashboard');
 				}
 			} catch (err) {
@@ -91,11 +92,13 @@
 						return;
 					}
 
-					if (accessCode !== ACCESS_CODE) {
-						error = 'Fel åtkomstkod';
+					if (accessCode !== ACCESS_CODE && accessCode !== ADMIN_CODE) {
+						error = 'Fel pinkod';
 						loading = false;
 						return;
 					}
+
+					const isAdmin = accessCode === ADMIN_CODE;
 
 					try {
 						const { data: existingUser } = await supabase
@@ -107,7 +110,7 @@
 						let user;
 
 						if (existingUser) {
-							user = existingUser;
+							user = { ...existingUser, role: isAdmin ? 'admin' : 'user' };
 						} else {
 							const { data: newUser, error: createError } = await supabase
 								.from('users')
@@ -116,7 +119,7 @@
 								.single();
 
 							if (createError) throw createError;
-							user = newUser;
+							user = { ...newUser, role: isAdmin ? 'admin' : 'user' };
 						}
 
 						// Save credentials to cookies
@@ -149,19 +152,39 @@
 					/>
 				</div>
 
-				<div class="form-control">
-					<label class="label mb-2" for="accessCode">
-						<span class="label-text font-medium">🔑 Åtkomstkod</span>
+				<div class="form-control mb-4">
+					<label class="label mb-2 pb-0" for="accessCode">
+						<span class="label-text font-medium text-center w-full">🔑 Pinkod</span>
 					</label>
-					<input
-						id="accessCode"
-						type="password"
-						placeholder="Skriv in koden"
-						class="input-bordered input w-full text-lg input-primary"
-						bind:value={accessCode}
-						disabled={loading}
-						autocomplete="current-password"
-					/>
+					
+					<div class="relative w-max mx-auto mt-2">
+						<!-- Hidden Native Input -->
+						<input
+							id="accessCode"
+							type="text"
+							inputmode="numeric"
+							pattern="[0-9]*"
+							maxlength="4"
+							class="absolute inset-0 z-10 w-full h-full opacity-0 cursor-text"
+							bind:value={accessCode}
+							disabled={loading}
+							autocomplete="off"
+						/>
+						
+						<!-- Visual PIN Display -->
+						<div class="flex justify-center gap-3">
+							{#each Array(4) as _, i}
+								<div class="w-14 h-16 rounded-xl border-2 flex items-center justify-center text-3xl font-bold bg-base-100/80 
+									{accessCode.length > i ? 'border-primary text-primary shadow-primary/20' : 'border-base-300'} 
+									{accessCode.length === i ? 'ring-2 ring-primary/50' : ''}
+									shadow-inner transition-all duration-200">
+									{#if accessCode.length > i}
+										{accessCode[i]}
+									{/if}
+								</div>
+							{/each}
+						</div>
+					</div>
 				</div>
 
 				{#if error}

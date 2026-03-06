@@ -9,6 +9,13 @@ export interface User {
 	name: string;
 	created_at: string;
 	ass_count: number;
+	role?: 'admin' | 'user';
+}
+
+export interface GameState {
+	id: string;
+	name: string;
+	is_unlocked: boolean;
 }
 
 export interface Score {
