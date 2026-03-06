@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores/authStore';
 	import { supabase } from '$lib/supabase';
-	import { fly, scale } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 
 	let auth = $state({ user: null as any, isAuthenticated: false });
 	let userAnswer = $state<number | null>(null);
@@ -11,8 +11,7 @@
 	let submitted = $state(false);
 	let result = $state<number | null>(null);
 
-	const CORRECT_ANSWER = 762100;
-	const QUESTION = 'Vad var Titus lön under inkomståret 2024? Total lön.';
+	const QUESTION = 'Ange ditt resultat från Kahoot!';
 
 	onMount(() => {
 		const unsubscribe = authStore.subscribe((value) => {
@@ -26,12 +25,6 @@
 		return unsubscribe;
 	});
 
-	function calculatePercentageDifference(answer: number): number {
-		const difference = Math.abs(answer - CORRECT_ANSWER);
-		const percentageDiff = (difference / CORRECT_ANSWER) * 100;
-		return Math.round(percentageDiff * 100) / 100; // Round to 2 decimals
-	}
-
 	async function submitAnswer() {
 		if (userAnswer === null || !auth.user) {
 			alert('Vänligen ange ett svar');
@@ -39,10 +32,9 @@
 		}
 
 		loading = true;
-		result = calculatePercentageDifference(userAnswer);
+		result = userAnswer;
 
 		try {
-			// Store the percentage difference as raw value (lower is better)
 			const { error } = await supabase.from('scores').upsert(
 				{
 					user_id: auth.user.id,
@@ -68,10 +60,6 @@
 			loading = false;
 		}
 	}
-
-	function formatCurrency(num: number): string {
-		return num.toLocaleString('sv-SE') + ' kr';
-	}
 </script>
 
 <div class="min-h-screen bg-linear-to-br from-base-300 via-base-100 to-base-300 p-4">
@@ -79,8 +67,8 @@
 		<!-- Header -->
 		<div class="mb-6" in:fly={{ y: -20, duration: 500 }}>
 			<a href="/dashboard" class="btn mb-4 btn-ghost btn-sm"> ← Tillbaka </a>
-			<h1 class="flex items-center gap-2 text-4xl font-bold">🎲 Utslagsfrågan</h1>
-			<p class="mt-2 text-base-content/70">Gissa rätt svar - den som är närmast vinner!</p>
+			<h1 class="flex items-center gap-2 text-4xl font-bold">🎲 Kahoot</h1>
+			<p class="mt-2 text-base-content/70">Mata in din slutpoäng från Kahoot!</p>
 		</div>
 
 		<!-- Question Card -->
@@ -91,12 +79,12 @@
 			<div class="card-body">
 				<!-- Question Icon -->
 				<div class="mb-4 text-center">
-					<div class="animate-pulse text-8xl">🤔</div>
+					<div class="animate-pulse text-8xl">🧠</div>
 				</div>
 
 				<!-- The Question -->
 				<div class="mb-6 text-center">
-					<h2 class="mb-2 text-2xl font-bold text-purple-200">Frågan:</h2>
+					<h2 class="mb-2 text-2xl font-bold text-purple-200">Uppgift:</h2>
 					<p
 						class="bg-base-900/50 rounded-xl border border-purple-400/30 p-4 text-xl font-medium text-white"
 					>
@@ -107,25 +95,25 @@
 				<!-- Answer Input -->
 				<div class="form-control">
 					<label class="label" for="answerInput">
-						<span class="label-text font-medium text-purple-200">💰 Ditt svar (i kronor)</span>
+						<span class="label-text font-medium text-purple-200">🏆 Ditt resultat</span>
 					</label>
 					<div class="join w-full">
 						<input
 							id="answerInput"
 							type="number"
 							min="0"
-							step="1000"
-							placeholder="Ange din gissning..."
+							step="1"
+							placeholder="Ange poäng..."
 							class="input-bordered input join-item w-full text-lg input-primary"
 							bind:value={userAnswer}
 							disabled={submitted}
 						/>
-						<span class="btn btn-disabled join-item bg-base-300">kr</span>
+						<span class="btn btn-disabled join-item bg-base-300">p</span>
 					</div>
 					{#if userAnswer !== null && userAnswer > 0}
 						<div class="label">
 							<span class="label-text-alt text-purple-300">
-								Din gissning: {formatCurrency(userAnswer)}
+								Ditt resultat: {userAnswer} p
 							</span>
 						</div>
 					{/if}
@@ -135,28 +123,12 @@
 					<div class="mt-6 text-center" transition:fly={{ y: 20, duration: 400 }}>
 						<div class="stats bg-base-200/80 shadow backdrop-blur-sm">
 							<div class="stat">
-								<div class="stat-title">Avvikelse från rätt svar</div>
-								<div
-									class="stat-value {result === 0
-										? 'text-success'
-										: result < 10
-											? 'text-warning'
-											: 'text-error'}"
-								>
-									{result}%
+								<div class="stat-title">Inskickat resultat</div>
+								<div class="stat-value text-success">
+									{result} p
 								</div>
 								<div class="stat-desc">
-									{#if result === 0}
-										🎉 Perfekt! Du gissade exakt rätt!
-									{:else if result < 5}
-										🔥 Otroligt nära!
-									{:else if result < 15}
-										👍 Bra gissning!
-									{:else if result < 30}
-										😅 Inte helt fel...
-									{:else}
-										🫣 Hmm, lite vid sidan om
-									{/if}
+									Snyggt jobbat! 👏
 								</div>
 							</div>
 						</div>
@@ -182,14 +154,14 @@
 					<div class="mt-6" transition:fly={{ y: 20, duration: 400 }}>
 						<button
 							onclick={submitAnswer}
-							class="btn border-0 bg-linear-to-r from-purple-600 to-pink-600 font-bold text-white shadow-lg transition-all hover:scale-105 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50"
+							class="btn border-0 w-full bg-linear-to-r from-purple-600 to-pink-600 font-bold text-white shadow-lg transition-all hover:scale-105 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50"
 							disabled={loading}
 						>
 							{#if loading}
 								<span class="loading loading-spinner"></span>
 								Skickar...
 							{:else}
-								🎲 Skicka in
+								📊 Skicka in
 							{/if}
 						</button>
 					</div>
@@ -197,7 +169,7 @@
 
 				<!-- Info -->
 				<div class="mt-6 text-center text-sm text-purple-300/70">
-					💡 Tips: Ju närmare det korrekta svaret, desto lägre avvikelse och bättre placering!
+					💡 Tips: Se till att du skriver in exakt samma poäng som du fick i Kahoot!
 				</div>
 			</div>
 		</div>
@@ -209,9 +181,9 @@
 		>
 			<h3 class="mb-2 font-semibold">📊 Så räknas poängen:</h3>
 			<ul class="list-inside list-disc space-y-1">
-				<li>Din avvikelse beräknas som procent från rätt svar</li>
-				<li>0% avvikelse = Perfekt gissning</li>
-				<li>Lägst avvikelse = Flest poäng på topplistan</li>
+				<li>Den som får högst poäng i Kahoot får placering 1</li>
+				<li>Placering 1 ger lika poäng som det finns spelare totalt</li>
+				<li>Alla påföljande placeringar ger fallande antal poäng</li>
 			</ul>
 		</div>
 	</div>

@@ -35,7 +35,7 @@
 			name: 'Split the G',
 			icon: '🍺',
 			image: 'split-g-game.jpg',
-			description: 'Bara bögar (lappen) dricker Murphys',
+			description: 'Bara Murphys är tillåtet',
 			route: '/games/split-g',
 			color: 'btn-accent'
 		},
@@ -43,7 +43,7 @@
 			name: 'Dart',
 			icon: '🎯',
 			image: 'dart-game.jpg',
-			description: '101-utslagning, alla spelar',
+			description: 'Högst poäng på 6 pilar',
 			route: '/games/dart',
 			color: 'btn-secondary'
 		},
@@ -56,10 +56,10 @@
 			color: 'btn-warning'
 		},
 		{
-			name: 'Utslagsfrågan',
+			name: 'Kahoot',
 			icon: '🎲',
 			image: 'utslagsfragan-game.jpg',
-			description: 'Närmast vinner',
+			description: 'Högst poäng vinner',
 			route: '/games/utslagsfragan',
 			color: 'bg-gradient-to-r from-purple-600 to-pink-600 border-0 text-white'
 		}
@@ -78,10 +78,20 @@
 					</p>
 				{/if}
 			</div>
-			<div class="flex gap-1">
-				<a href="/settings" class="btn btn-square btn-ghost btn-sm" title="Inställningar"> ⚙️ </a>
-				<button onclick={handleLogout} class="btn btn-square btn-ghost btn-sm" title="Logga ut">
-					🚪
+			<div class="flex gap-2">
+				<a
+					href="/settings"
+					class="btn btn-circle bg-base-200/50 shadow-md transition-transform hover:-rotate-12 hover:scale-110 hover:bg-base-300"
+					title="Inställningar"
+				>
+					<span class="text-2xl drop-shadow-sm">⚙️</span>
+				</a>
+				<button
+					onclick={handleLogout}
+					class="btn btn-circle bg-base-200/50 shadow-md transition-transform hover:rotate-12 hover:scale-110 hover:bg-base-300"
+					title="Logga ut"
+				>
+					<span class="text-2xl drop-shadow-sm">🚪</span>
 				</button>
 			</div>
 		</div>

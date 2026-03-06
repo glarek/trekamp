@@ -134,7 +134,7 @@
 				<div class="space-y-2 text-sm">
 					<p>🍺 Drick tills du prickar mitten av G:et.</p>
 					<p>🍺 Drick i ett svep.</p>
-					<p>🍺 Storkukspoäng för den som dricker allt i <strong>en klunk.</strong></p>
+					<p>🍺 Tips: Tre hyggliga klunkar brukar pricka rätt.</p>
 				</div>
 			</div>
 		</div>

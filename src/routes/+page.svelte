@@ -70,7 +70,7 @@
 					class="speed mx-auto mb-4 h-20 w-24 animate-spin transition-all [animation-duration:3s]"
 				/>
 				<h1 class="card-title justify-center text-4xl font-bold">Trekampen</h1>
-				<p class="mt-2 text-base-content/70">DG's trekamp. Skriv in ditt namn.</p>
+				<p class="mt-2 text-base-content/70">Nötkreaturens trekamp. Skriv in ditt namn.</p>
 			</div>
 
 			<form

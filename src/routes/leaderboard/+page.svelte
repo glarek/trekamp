@@ -112,12 +112,12 @@
 			const splitGPoints =
 				splitGValues.length > 0 ? calculateRankPoints(splitGValues, user.id, 'split_g', true) : 0;
 			const dartPoints =
-				dartValues.length > 0 ? calculateRankPoints(dartValues, user.id, 'dart', false) : 0;
+				dartValues.length > 0 ? calculateRankPoints(dartValues, user.id, 'dart', true) : 0;
 			const jvPoints = jvValues.length > 0 ? calculateRankPoints(jvValues, user.id, 'jv', true) : 0;
 			// Utslagsfrågan: lower percentage difference is better
 			const utslagsfraganPoints =
 				utslagsfraganValues.length > 0
-					? calculateRankPoints(utslagsfraganValues, user.id, 'utslagsfragan', false)
+					? calculateRankPoints(utslagsfraganValues, user.id, 'utslagsfragan', true)
 					: 0;
 
 			return {
@@ -249,9 +249,21 @@
 					</span>
 				{/if}
 			</div>
-			<div class="flex gap-1">
-				<a href="/settings" class="btn btn-square btn-ghost btn-sm" title="Inställningar"> ⚙️ </a>
-				<a href="/dashboard" class="btn btn-square btn-ghost btn-sm" title="Tillbaka"> ← </a>
+			<div class="flex gap-2">
+				<a
+					href="/settings"
+					class="btn btn-circle bg-base-200/50 shadow-md transition-transform hover:-rotate-12 hover:scale-110 hover:bg-base-300"
+					title="Inställningar"
+				>
+					<span class="text-2xl drop-shadow-sm">⚙️</span>
+				</a>
+				<a
+					href="/dashboard"
+					class="btn btn-circle bg-base-200/50 shadow-md transition-transform hover:rotate-12 hover:scale-110 hover:bg-base-300"
+					title="Tillbaka"
+				>
+					<span class="text-2xl drop-shadow-sm">🏠</span>
+				</a>
 			</div>
 		</div>
 
@@ -260,104 +272,123 @@
 				<span class="loading loading-lg loading-spinner text-primary"></span>
 			</div>
 		{:else}
-			<!-- Leaderboard Table -->
-			<div class="overflow-x-auto rounded-xl" in:fly={{ y: 20, duration: 500, delay: 100 }}>
-				<table class="table w-full table-zebra table-xs md:table-sm">
-					<thead class="bg-base-200">
-						<tr class="text-[10px] md:text-sm">
-							<th class="px-1 md:px-4">#</th>
-							<th class="px-1 md:px-4">Namn</th>
-							<th class="px-1 text-center md:px-4">P</th>
-							<th class="px-1 text-center md:px-4">🍺</th>
-							<th class="px-1 text-center md:px-4">🎯</th>
-							<th class="px-1 text-center md:px-4">💰</th>
-							<th class="px-1 text-center md:px-4">🎲</th>
-							<th class="px-1 text-center md:px-4">🍑</th>
-							<th class="px-1 md:px-4"></th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each leaderboard as entry, i (entry.id)}
-							<tr
-								class={entry.id === auth.user?.id ? 'bg-primary/20 font-bold' : ''}
-								in:scale={{ duration: 400, delay: i * 50 }}
-							>
-								<td class="px-1 text-xl md:px-4"
-									>{getRankDisplay(
-										i,
-										entry.total_score,
-										leaderboard.map((e) => e.total_score)
-									)}</td
+			<!-- Leaderboard Cards -->
+			<div class="flex flex-col gap-4" in:fly={{ y: 20, duration: 500, delay: 100 }}>
+				{#each leaderboard as entry, i (entry.id)}
+					{@const rank = getRankNumber(i, entry.total_score, leaderboard.map((e) => e.total_score))}
+					<div
+						class="card relative overflow-hidden border transition-all hover:scale-[1.02] 
+							{rank === 1
+								? 'border-yellow-500/50 bg-linear-to-br from-yellow-300/40 via-yellow-500/20 to-yellow-600/40 shadow-yellow-500/20 shadow-xl'
+								: rank === 2
+									? 'border-gray-400/50 bg-linear-to-br from-gray-300/40 via-gray-400/20 to-gray-500/40 shadow-gray-400/20 shadow-xl'
+									: rank === 3
+										? 'border-amber-700/50 bg-linear-to-br from-amber-600/40 via-amber-700/20 to-amber-800/40 shadow-amber-700/20 shadow-xl'
+										: 'border-base-300 bg-base-200/80 shadow-md backdrop-blur-sm'}"
+						in:scale={{ duration: 400, delay: i * 50 }}
+					>
+						{#if rank === 1}
+							<div class="absolute -right-2 -top-2 rotate-12 text-6xl opacity-80 drop-shadow-lg">
+								🥇
+							</div>
+						{:else if rank === 2}
+							<div class="absolute -right-2 -top-2 rotate-12 text-6xl opacity-80 drop-shadow-lg">
+								🥈
+							</div>
+						{:else if rank === 3}
+							<div class="absolute -right-2 -top-2 rotate-12 text-6xl opacity-80 drop-shadow-lg">
+								🥉
+							</div>
+						{/if}
+
+						<div class="card-body p-4 sm:p-6">
+							<div class="flex items-center gap-4">
+								<!-- Rank Badge -->
+								<div
+									class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-base-content/10 bg-base-100/50 text-2xl font-bold shadow-inner"
 								>
-								<td class="max-w-[80px] px-1 md:max-w-none md:px-4">
-									<div class="flex items-center gap-1 overflow-hidden">
-										<span class="truncate font-medium">{entry.name}</span>
+									{#if rank === 1}🥇{:else if rank === 2}🥈{:else if rank === 3}🥉{:else}{rank}{/if}
+								</div>
+
+								<!-- Player Info -->
+								<div class="flex-1">
+									<h2 class="flex items-center gap-2 text-2xl font-bold leading-tight">
+										{entry.name}
 										{#if entry.id === auth.user?.id}
-											<span class="text-[10px] opacity-70">★</span>
+											<span class="badge badge-primary badge-sm">Du</span>
 										{/if}
+									</h2>
+									<div class="mt-1 text-xl font-black drop-shadow-sm opacity-90">
+										{entry.total_score} poäng
 									</div>
-								</td>
-								<td class="px-1 text-center md:px-4">
-									<span class="font-bold whitespace-nowrap">{entry.total_score}p</span>
-								</td>
-								<td class="px-0 text-center md:px-2">
-									{#if entry.split_g !== null}
-										<span class="text-xs whitespace-nowrap md:text-sm">{entry.split_g}</span>
-									{:else}
-										<span class="text-base-content/20">-</span>
-									{/if}
-								</td>
-								<td class="px-0 text-center md:px-2">
-									{#if entry.dart !== null}
-										<span class="text-xs whitespace-nowrap md:text-sm">{entry.dart}</span>
-									{:else}
-										<span class="text-base-content/20">-</span>
-									{/if}
-								</td>
-								<td class="px-0 text-center md:px-2">
-									{#if entry.jv !== null}
-										<span
-											class="text-xs whitespace-nowrap md:text-sm {entry.jv >= 0
-												? 'text-success'
-												: 'text-error'}"
-										>
-											{entry.jv >= 0 ? '+' : ''}{entry.jv}
-										</span>
-									{:else}
-										<span class="text-base-content/20">-</span>
-									{/if}
-								</td>
-								<td class="px-0 text-center md:px-2">
-									{#if entry.utslagsfragan !== null}
-										<span class="text-[10px] whitespace-nowrap md:text-xs"
-											>{entry.utslagsfragan}%</span
-										>
-									{:else}
-										<span class="text-base-content/20">-</span>
-									{/if}
-								</td>
-								<td class="px-0 text-center md:px-2">
-									<span
-										class="text-xs md:text-sm {entry.ass_count > 0
-											? 'text-error'
-											: 'text-base-content/20'}"
-									>
-										{entry.ass_count || 0}
-									</span>
-								</td>
-								<td class="px-0 text-center md:px-2">
+								</div>
+
+								<!-- Ass Button -->
+								<div class="text-right">
 									<button
 										onclick={() => callAss(entry.id)}
-										class="btn h-6 min-h-0 w-6 p-0 btn-ghost btn-xs"
+										class="btn btn-circle btn-ghost btn-sm text-2xl hover:bg-error/20 sm:btn-md {entry.ass_count >
+										0
+											? 'text-error'
+											: 'opacity-50 grayscale hover:grayscale-0'}"
 										title="Kalla dem för en röv!"
 									>
 										🍑
+										{#if entry.ass_count > 0}
+											<div class="badge badge-error badge-sm absolute -right-1 -top-1">
+												{entry.ass_count}
+											</div>
+										{/if}
 									</button>
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
+								</div>
+							</div>
+
+							<div class="divider my-4 opacity-30"></div>
+
+							<!-- Game Results -->
+							<div class="grid grid-cols-4 gap-2 text-center text-sm">
+								<div
+									class="flex flex-col items-center justify-center rounded-lg border border-base-content/10 bg-base-100/50 p-3 shadow-inner transition-transform hover:scale-105"
+								>
+									<span class="mb-1 text-3xl drop-shadow-md">🍺</span>
+									<span class="text-[10px] uppercase tracking-wider opacity-70 font-bold mb-1">G-Split</span>
+									<span class="text-base font-black">{entry.split_g !== null ? entry.split_g : '-'}</span>
+								</div>
+								<div
+									class="flex flex-col items-center justify-center rounded-lg border border-base-content/10 bg-base-100/50 p-3 shadow-inner transition-transform hover:scale-105"
+								>
+									<span class="mb-1 text-3xl drop-shadow-md">🎯</span>
+									<span class="text-[10px] uppercase tracking-wider opacity-70 font-bold mb-1">Dart</span>
+									<span class="text-base font-black">{entry.dart !== null ? entry.dart : '-'}</span>
+								</div>
+								<div
+									class="flex flex-col items-center justify-center rounded-lg border border-base-content/10 bg-base-100/50 p-3 shadow-inner transition-transform hover:scale-105"
+								>
+									<span class="mb-1 text-3xl drop-shadow-md">💰</span>
+									<span class="text-[10px] uppercase tracking-wider opacity-70 font-bold mb-1">JV</span>
+									<span
+										class="text-base font-black {entry.jv !== null
+											? entry.jv >= 0
+												? 'text-success'
+												: 'text-error'
+											: ''}"
+									>
+										{entry.jv !== null ? `${entry.jv >= 0 ? '+' : ''}${entry.jv}` : '-'}
+									</span>
+								</div>
+								<div
+									class="flex flex-col items-center justify-center rounded-lg border border-base-content/10 bg-base-100/50 p-3 shadow-inner transition-transform hover:scale-105"
+								>
+									<span class="mb-1 text-3xl drop-shadow-md">🎲</span>
+									<span class="text-[10px] uppercase tracking-wider opacity-70 font-bold mb-1">Kahoot</span>
+									<span class="text-base font-black"
+										>{entry.utslagsfragan !== null ? entry.utslagsfragan : '-'}</span
+									>
+								</div>
+							</div>
+						</div>
+					</div>
+				{/each}
 			</div>
 
 			{#if leaderboard.length === 0}
@@ -380,9 +411,9 @@
 					<h3 class="mb-2 text-sm font-bold">📊 Poängberäkning</h3>
 					<div class="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px] text-base-content/70 md:text-sm">
 						<p>🍺 Split the G: Precision (0-100)</p>
-						<p>🎯 Dart: Placering (1=bäst)</p>
+						<p>🎯 Dart: Poäng (högst vinner)</p>
 						<p>💰 JV: Nettovinst (kr)</p>
-						<p>🎲 Utslag: Avvikelse % (0=bäst)</p>
+						<p>🎲 Kahoot: Poäng (högst vinner)</p>
 					</div>
 				</div>
 

@@ -6,7 +6,7 @@
 	import { fly } from 'svelte/transition';
 
 	let auth = $state({ user: null as any, isAuthenticated: false });
-	let placement = $state<number | null>(null);
+	let score = $state<number | null>(null);
 	let loading = $state(false);
 	let submitted = $state(false);
 
@@ -23,8 +23,8 @@
 	});
 
 	async function submitScore() {
-		if (placement === null || !auth.user || placement < 1) {
-			alert('Vänligen ange en giltig placering (1 eller högre)');
+		if (score === null || !auth.user || score < 0) {
+			alert('Vänligen ange ett giltigt poängresultat (0 eller högre)');
 			return;
 		}
 
@@ -35,7 +35,7 @@
 				{
 					user_id: auth.user.id,
 					game_type: 'dart',
-					raw_value: placement
+					raw_value: score
 				},
 				{
 					onConflict: 'user_id,game_type'
@@ -56,22 +56,6 @@
 			loading = false;
 		}
 	}
-
-	function getPlacementSuffix(num: number): string {
-		if (num === 1) return ':a';
-		if (num === 2) return ':a';
-		if (num === 3) return ':e';
-		return ':e';
-	}
-
-	const placements = [
-		{ value: 1, label: '🥇 1:a plats' },
-		{ value: 2, label: '🥈 2:a plats' },
-		{ value: 3, label: '🥉 3:e plats' },
-		{ value: 4, label: '4:e plats' },
-		{ value: 5, label: '5:e plats' },
-		{ value: 6, label: '6:e plats' }
-	];
 </script>
 
 <div class="min-h-screen bg-linear-to-br from-base-300 via-base-100 to-base-300 p-4">
@@ -80,7 +64,7 @@
 		<div class="mb-6" in:fly={{ y: -20, duration: 500 }}>
 			<a href="/dashboard" class="btn mb-4 btn-ghost btn-sm"> ← Tillbaka </a>
 			<h1 class="flex items-center gap-2 text-4xl font-bold">🎯 Dart</h1>
-			<p class="mt-2 text-base-content/70">Registrera din placering i dartspelet</p>
+			<p class="mt-2 text-base-content/70">Registrera ditt poängresultat i dartspelet</p>
 		</div>
 
 		<!-- Game Rules -->
@@ -91,11 +75,10 @@
 			<div class="card-body">
 				<h2 class="card-title text-info">📋 Spelregler</h2>
 				<div class="space-y-2 text-sm">
-					<p>🎯 Alla börjar med <strong>101 poäng</strong></p>
-					<p>🎯 Tre pilar kastas per runda</p>
-					<p>🎯 Första som kommer till <strong>exakt 0</strong> vinner!</p>
-					<p>🎯 Man behöver <strong>inte</strong> gå ut på en dubbel/trippel</p>
-					<p>🎯 Den som går ut först får 1:a plats, nästa 2:a, osv.</p>
+					<p>🎯 Alla kastar <strong>6 stycken pilar</strong></p>
+					<p>🎯 Pilarna kastas direkt efter varandra</p>
+					<p>🎯 Summera resultatet från alla 6 pilar</p>
+					<p>🎯 Högst totalpoäng vinner och får placering nr 1!</p>
 				</div>
 			</div>
 		</div>
@@ -106,42 +89,27 @@
 			in:fly={{ y: 20, duration: 500, delay: 100 }}
 		>
 			<div class="card-body">
-				<h2 class="mb-4 card-title">🏆 Vilken plats kom du på?</h2>
-
-				<!-- Placement Options -->
-				<div class="grid grid-cols-2 gap-4 md:grid-cols-3">
-					{#each placements as place, i}
-						<button
-							onclick={() => (placement = place.value)}
-							class="btn h-auto flex-col gap-2 p-4 transition-all btn-lg {placement === place.value
-								? 'scale-105 shadow-lg btn-primary'
-								: 'btn-outline hover:btn-primary'}"
-							in:fly={{ y: 20, duration: 400, delay: i * 50 }}
-						>
-							<div class="text-3xl">{place.label.split(' ')[0]}</div>
-							<div class="text-sm">{place.label.split(' ').slice(1).join(' ')}</div>
-						</button>
-					{/each}
-				</div>
+				<h2 class="mb-4 card-title">🏆 Vad blev din totalpoäng?</h2>
 
 				<!-- Custom Placement Input -->
-				<div class="divider">ELLER</div>
-
 				<div class="form-control">
-					<label class="label" for="customPlacement">
-						<span class="label-text">Ange annan placering</span>
+					<label class="label" for="scoreInput">
+						<span class="label-text">Ange din slutpoäng (summan av 6 pilar)</span>
 					</label>
-					<input
-						id="customPlacement"
-						type="number"
-						min="1"
-						placeholder="Vilken plats kom du på? (t.ex. 7, 8...)"
-						class="input-bordered input w-full input-primary"
-						bind:value={placement}
-					/>
+					<div class="join w-full">
+						<input
+							id="scoreInput"
+							type="number"
+							min="0"
+							placeholder="T.ex. 60, 100, 180..."
+							class="input-bordered input join-item w-full input-primary"
+							bind:value={score}
+						/>
+						<span class="btn btn-disabled join-item bg-base-300">poäng</span>
+					</div>
 				</div>
 
-				{#if placement !== null && placement > 0}
+				{#if score !== null && score >= 0}
 					<div class="mt-6" transition:fly={{ y: 20, duration: 400 }}>
 						<div class="mb-4 alert alert-info">
 							<svg
@@ -157,9 +125,7 @@
 									d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 								></path>
 							</svg>
-							<span
-								>Du kom på <strong>{placement}{getPlacementSuffix(placement)} plats</strong>! 🎉</span
-							>
+							<span>Du fick ihop <strong>{score} poäng</strong>! 🎯</span>
 						</div>
 
 						{#if !submitted}
