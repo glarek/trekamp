@@ -17,6 +17,12 @@
 	let resetConfirmation = $state('');
 	let resetting = $state(false);
 
+	// Edit modal (Admin)
+	let showEditModal = $state(false);
+	let editingUser = $state<LeaderboardEntry | null>(null);
+	let editScores = $state<{ split_g: number | null, dart: number | null, jv: number | null, utslagsfragan: number | null }>({ split_g: null, dart: null, jv: null, utslagsfragan: null });
+	let saving = $state(false);
+
 	onMount(() => {
 		const unsubscribe = authStore.subscribe((value) => {
 			auth = value;
@@ -228,6 +234,53 @@
 			resetting = false;
 		}
 	}
+
+	function openEditModal(user: LeaderboardEntry) {
+		editingUser = user;
+		editScores = {
+			split_g: user.split_g,
+			dart: user.dart,
+			jv: user.jv,
+			utslagsfragan: user.utslagsfragan
+		};
+		showEditModal = true;
+	}
+
+	function closeEditModal() {
+		showEditModal = false;
+		editingUser = null;
+	}
+
+	async function saveEditScores() {
+		if (!editingUser) return;
+		saving = true;
+
+		try {
+			const games = ['split_g', 'dart', 'jv', 'utslagsfragan'] as const;
+			for (const game of games) {
+				const val = editScores[game];
+				if (val !== null && val !== undefined && val.toString() !== '') {
+					await supabase.from('scores').upsert({
+						user_id: editingUser.id,
+						game_type: game,
+						raw_value: Number(val)
+					}, { onConflict: 'user_id,game_type' });
+				} else {
+					await supabase.from('scores')
+						.delete()
+						.eq('user_id', editingUser.id)
+						.eq('game_type', game);
+				}
+			}
+			loadLeaderboard();
+			closeEditModal();
+		} catch (e) {
+			console.error('Fel vid sparning:', e);
+			alert('Kunde inte spara resultaten.');
+		} finally {
+			saving = false;
+		}
+	}
 </script>
 
 <div class="min-h-screen bg-linear-to-br from-base-300 via-base-100 to-base-300 p-4">
@@ -322,6 +375,19 @@
 										{entry.total_score} poäng
 									</div>
 								</div>
+
+								<!-- Admin Edit Button -->
+								{#if auth.user?.role === 'admin'}
+									<div class="text-right">
+										<button
+											onclick={() => openEditModal(entry)}
+											class="btn btn-circle btn-ghost btn-sm text-2xl hover:bg-info/20 sm:btn-md grayscale hover:grayscale-0"
+											title="Ändra resultat"
+										>
+											✏️
+										</button>
+									</div>
+								{/if}
 
 								<!-- Ass Button -->
 								<div class="text-right">
@@ -473,6 +539,53 @@
 			class="modal-backdrop"
 			onclick={() => (showResetModal = false)}
 			onkeydown={(e) => e.key === 'Escape' && (showResetModal = false)}
+			role="button"
+			tabindex="-1"
+			aria-label="Close modal"
+		></div>
+	</div>
+{/if}
+
+<!-- Edit Results Modal -->
+{#if showEditModal && editingUser}
+	<div class="modal-open modal">
+		<div class="modal-box" transition:fly={{ y: 20, duration: 300 }}>
+			<h3 class="text-lg font-bold">✏️ Redigera resultat</h3>
+			<p class="text-sm opacity-70 mb-4">Ändra resultat för <strong class="text-primary">{editingUser.name}</strong></p>
+			
+			<div class="py-2 space-y-4">
+				<div class="form-control">
+					<label class="label" for="edit_split_g"><span class="label-text font-bold">🍺 Split the G</span> <span class="label-text-alt opacity-50">(poäng 0-100)</span></label>
+					<input id="edit_split_g" type="number" step="1" bind:value={editScores.split_g} class="input input-bordered w-full" placeholder="Lämna tomt för att ta bort" />
+				</div>
+				<div class="form-control">
+					<label class="label" for="edit_dart"><span class="label-text font-bold">🎯 Dart</span> <span class="label-text-alt opacity-50">(slutpoäng)</span></label>
+					<input id="edit_dart" type="number" step="1" bind:value={editScores.dart} class="input input-bordered w-full" placeholder="Lämna tomt för att ta bort" />
+				</div>
+				<div class="form-control">
+					<label class="label" for="edit_jv"><span class="label-text font-bold">💰 JV</span> <span class="label-text-alt opacity-50">(nettovinst kr)</span></label>
+					<input id="edit_jv" type="number" step="1" bind:value={editScores.jv} class="input input-bordered w-full" placeholder="Lämna tomt för att ta bort" />
+				</div>
+				<div class="form-control">
+					<label class="label" for="edit_utslagsfragan"><span class="label-text font-bold">🎲 Kahoot</span> <span class="label-text-alt opacity-50">(poäng)</span></label>
+					<input id="edit_utslagsfragan" type="number" step="1" bind:value={editScores.utslagsfragan} class="input input-bordered w-full" placeholder="Lämna tomt för att ta bort" />
+				</div>
+			</div>
+
+			<div class="modal-action mt-6">
+				<button class="btn btn-ghost" onclick={closeEditModal} disabled={saving}>Avbryt</button>
+				<button class="btn btn-primary" onclick={saveEditScores} disabled={saving}>
+					{#if saving}
+						<span class="loading loading-spinner"></span>
+					{/if}
+					💾 Spara ändringar
+				</button>
+			</div>
+		</div>
+		<div
+			class="modal-backdrop"
+			onclick={closeEditModal}
+			onkeydown={(e) => e.key === 'Escape' && closeEditModal()}
 			role="button"
 			tabindex="-1"
 			aria-label="Close modal"

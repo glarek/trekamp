@@ -10,6 +10,7 @@
 	let loading = $state(false);
 	let submitted = $state(false);
 	let result = $state<number | null>(null);
+	let hasExistingScore = $state(false);
 
 	const QUESTION = 'Ange ditt resultat från Kahoot!';
 
@@ -20,7 +21,28 @@
 
 		if (!auth.isAuthenticated) {
 			goto('/');
+			return unsubscribe;
 		}
+
+		(async () => {
+			try {
+				const { data } = await supabase
+					.from('scores')
+					.select('*')
+					.eq('user_id', auth.user.id)
+					.eq('game_type', 'utslagsfragan')
+					.single();
+
+				if (data) {
+					hasExistingScore = true;
+					userAnswer = data.raw_value;
+					result = data.raw_value;
+					submitted = true;
+				}
+			} catch (err) {
+				// No existing score
+			}
+		})();
 
 		return unsubscribe;
 	});
@@ -106,7 +128,7 @@
 							placeholder="Ange poäng..."
 							class="input-bordered input join-item w-full text-lg input-primary"
 							bind:value={userAnswer}
-							disabled={submitted}
+							disabled={submitted || hasExistingScore}
 						/>
 						<span class="btn btn-disabled join-item bg-base-300">p</span>
 					</div>
@@ -133,22 +155,29 @@
 							</div>
 						</div>
 
-						<div class="mt-4 alert alert-success">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="h-6 w-6 shrink-0 stroke-current"
-								fill="none"
-								viewBox="0 0 24 24"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-								/>
-							</svg>
-							<span>Svaret inskickat! Omdirigerar...</span>
-						</div>
+						{#if hasExistingScore}
+							<div class="mt-4 alert alert-warning">
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+								<span>Ditt resultat är låst! Prata med spelledaren om det blivit fel.</span>
+							</div>
+						{:else}
+							<div class="mt-4 alert alert-success">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="h-6 w-6 shrink-0 stroke-current"
+									fill="none"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+									/>
+								</svg>
+								<span>Svaret inskickat! Omdirigerar...</span>
+							</div>
+						{/if}
 					</div>
 				{:else if userAnswer !== null && userAnswer > 0}
 					<div class="mt-6" transition:fly={{ y: 20, duration: 400 }}>

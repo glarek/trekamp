@@ -13,6 +13,7 @@
 	let score = $state<number | null>(null);
 	let loading = $state(false);
 	let submitted = $state(false);
+	let hasExistingScore = $state(false);
 
 	const PERFECT_POSITION = 0.555; // 35% down from top is the "perfect" split
 
@@ -23,7 +24,27 @@
 
 		if (!auth.isAuthenticated) {
 			goto('/');
+			return unsubscribe;
 		}
+
+		(async () => {
+			try {
+				const { data } = await supabase
+					.from('scores')
+					.select('*')
+					.eq('user_id', auth.user.id)
+					.eq('game_type', 'split_g')
+					.single();
+
+				if (data) {
+					hasExistingScore = true;
+					score = data.raw_value;
+					clickY = PERFECT_POSITION - (1 - (score ?? 0) / 100) / 2; // rough reverse engineering of where they clicked
+				}
+			} catch (err) {
+				// No existing score
+			}
+		})();
 
 		return unsubscribe;
 	});
@@ -36,7 +57,7 @@
 	}
 
 	function handleStart(event: MouseEvent | TouchEvent) {
-		if (submitted) return;
+		if (submitted || hasExistingScore) return;
 
 		isDragging = true;
 
@@ -50,7 +71,7 @@
 	}
 
 	function handleMove(event: MouseEvent | TouchEvent) {
-		if (!isDragging || submitted) return;
+		if (!isDragging || submitted || hasExistingScore) return;
 
 		// Prevent scrolling while dragging
 		event.preventDefault();
@@ -60,7 +81,7 @@
 	}
 
 	function handleEnd(event: MouseEvent | TouchEvent) {
-		if (!isDragging || submitted) return;
+		if (!isDragging || submitted || hasExistingScore) return;
 
 		// Prevent default action
 		if ('touches' in event || 'changedTouches' in event) {
@@ -227,7 +248,12 @@
 							<div class="text-sm text-base-content/70">Precisions-poäng</div>
 						</div>
 
-						{#if score >= 90}
+						{#if hasExistingScore}
+							<div class="mt-4 alert alert-warning">
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+								<span>Ditt resultat är låst! Prata med spelledaren om det blivit fel.</span>
+							</div>
+						{:else if score >= 90}
 							<div class="mb-2 text-2xl">🎯 Perfekt!</div>
 						{:else if score >= 70}
 							<div class="mb-2 text-2xl">👍 Bra jobbat!</div>
@@ -237,7 +263,7 @@
 							<div class="mb-2 text-2xl">🫣 Hmm...</div>
 						{/if}
 
-						{#if !submitted}
+						{#if !submitted && !hasExistingScore}
 							<button
 								onclick={submitScore}
 								class="btn w-full shadow-lg btn-lg btn-primary hover:shadow-primary/50"

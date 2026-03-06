@@ -9,6 +9,7 @@
 	let currentBalance = $state<number | null>(null);
 	let loading = $state(false);
 	let submitted = $state(false);
+	let hasExistingScore = $state(false);
 
 	const STARTING_BALANCE = 100;
 
@@ -19,7 +20,26 @@
 
 		if (!auth.isAuthenticated) {
 			goto('/');
+			return unsubscribe;
 		}
+
+		(async () => {
+			try {
+				const { data } = await supabase
+					.from('scores')
+					.select('*')
+					.eq('user_id', auth.user.id)
+					.eq('game_type', 'jv')
+					.single();
+
+				if (data) {
+					hasExistingScore = true;
+					currentBalance = data.raw_value + STARTING_BALANCE;
+				}
+			} catch (err) {
+				// No existing score
+			}
+		})();
 
 		return unsubscribe;
 	});
@@ -104,6 +124,7 @@
 						{#each quickBalances as balance, i}
 							<button
 								onclick={() => (currentBalance = balance)}
+								disabled={hasExistingScore}
 								class="btn btn-sm {currentBalance === balance
 									? 'shadow-lg btn-primary'
 									: 'btn-outline hover:btn-primary'}"
@@ -129,12 +150,18 @@
 							placeholder="Ange ditt nuvarande saldo"
 							class="input-bordered input join-item w-full input-primary"
 							bind:value={currentBalance}
+							disabled={hasExistingScore}
 						/>
 						<span class="btn btn-disabled join-item bg-base-300">kr</span>
 					</div>
 				</div>
 
-				{#if netResult !== null && currentBalance !== null}
+				{#if hasExistingScore}
+					<div class="mt-6 alert alert-warning">
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+						<span>Ditt resultat är låst! Prata med spelledaren om det blivit fel.</span>
+					</div>
+				{:else if netResult !== null && currentBalance !== null}
 					<div class="mt-6" transition:fly={{ y: 20, duration: 400 }}>
 						<div class="stats w-full shadow">
 							<div class="stat">
