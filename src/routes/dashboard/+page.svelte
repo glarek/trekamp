@@ -81,14 +81,14 @@
 			<div class="flex gap-2">
 				<a
 					href="/settings"
-					class="btn btn-circle bg-base-200/50 shadow-md transition-transform hover:-rotate-12 hover:scale-110 hover:bg-base-300"
+					class="btn btn-circle bg-base-200/50 shadow-md transition-transform hover:scale-110 hover:-rotate-12 hover:bg-base-300"
 					title="Inställningar"
 				>
 					<span class="text-2xl drop-shadow-sm">⚙️</span>
 				</a>
 				<button
 					onclick={handleLogout}
-					class="btn btn-circle bg-base-200/50 shadow-md transition-transform hover:rotate-12 hover:scale-110 hover:bg-base-300"
+					class="btn btn-circle bg-base-200/50 shadow-md transition-transform hover:scale-110 hover:rotate-12 hover:bg-base-300"
 					title="Logga ut"
 				>
 					<span class="text-2xl drop-shadow-sm">🚪</span>
@@ -156,7 +156,7 @@
 
 		<!-- Fun footer -->
 		<div class="mt-8 text-center text-sm text-base-content/40">
-			<p>Må den bästa bögen vinna!</p>
+			<p>Må den bästa (ex-)-Tjuren vinna!</p>
 		</div>
 	</div>
 </div>
